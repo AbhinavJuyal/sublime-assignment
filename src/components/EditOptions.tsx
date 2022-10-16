@@ -2,9 +2,11 @@ import {
   changeModalData,
   deleteComponent,
   deleteForm,
+  loadForm,
   openModal,
 } from "@/redux/formSlice";
 import { useAppDispatch } from "@/redux/hooks";
+import { fetchData } from "@/utils/constants";
 import { PencilSimple, Trash } from "phosphor-react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,8 +20,11 @@ const EditOptions = ({ id, type }: IEditOptions) => {
   const navigate = useNavigate();
 
   const editComponent: React.MouseEventHandler<HTMLButtonElement> = (e) => {
-    console.log(id);
     if (type === "form") {
+      if (id) {
+        const forms = fetchData();
+        dispatch(loadForm({ data: forms[id], id }));
+      }
       navigate("/create", { state: { id } });
       return;
     }

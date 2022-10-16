@@ -45,11 +45,6 @@ const CreateForm = () => {
   const [formDesc, setFormDesc] = useState<string>(desc);
 
   useEffect(() => {
-    const id = state?.id;
-    if (id) {
-      const forms = fetchData();
-      dispatch(loadForm({ data: forms[id], id }));
-    }
     return () => {
       dispatch(resetForm());
     };
