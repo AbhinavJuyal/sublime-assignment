@@ -2,8 +2,8 @@ import { FloppyDiskBack, PlusCircle } from "phosphor-react";
 import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import toast from "react-hot-toast";
+
 import CheckBox from "@/components/CheckBox";
 import Radio from "@/components/Radio";
 import Text from "@/components/Text";
@@ -67,7 +67,7 @@ const CreateForm = () => {
 
   const handleCreateForm = () => {
     if (formTitle === "" || formDesc === "") {
-      console.log("no save data");
+      toast.error("Please fill all fields!");
       return;
     }
     const allForms = fetchData();
