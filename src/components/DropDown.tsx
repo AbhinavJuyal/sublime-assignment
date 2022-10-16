@@ -50,7 +50,7 @@ const DropDown = ({ options, value, setValue }: IDropDown) => {
         {options.map((option, idx) => (
           <div
             key={idx}
-            className="drop-down-option font-semibold text-base px-5 py-4 hover:bg-gray-200 active:bg-gray-400"
+            className="drop-down-option font-semibold text-base px-5 py-4 hover:bg-gray-200 active:bg-gray-400 cursor-pointer"
           >
             {option}
           </div>

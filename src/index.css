@@ -18,6 +18,10 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html {
+    @apply text-primary;
+  }
+
   *,
   *::after,
   *::before {
@@ -101,5 +105,13 @@
 
   .default-checkbox {
     @apply w-4 aspect-square;
+  }
+
+  .default-grid {
+    @apply grid grid-cols-[60px_minmax(100px,_200px)_1fr] gap-4;
+  }
+
+  .default-button {
+    @apply w-full max-w-xs h-11 bg-primary text-white font-medium text-sm rounded-lg mx-auto;
   }
 }

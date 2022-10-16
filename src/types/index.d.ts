@@ -2,56 +2,61 @@ type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
 
 type Options = Record<string, string>;
 
-type Component = {
+type ComponentData = {
   category: string;
   question: string;
   options: Options;
   required?: boolean;
 };
 
-type ComponentData = Record<string, Component>;
+type AllComponentData = Record<string, ComponentData>;
 
 interface IModal {
   open: boolean;
   id: string;
 }
 
-interface ICreateForm {
-  saved: boolean;
-  componentData: ComponentData;
+interface IForm {
+  componentData: AllComponentData;
   modal: IModal;
   formTitle: string;
   formDesc: string;
-  readonly formId: string;
+  formId: string;
 }
 
-interface IEditHOC {
-  id: string;
-  data: Component | undefined;
-  category: string;
-}
-
-interface IShowHOC extends IEditHOC {
-  data: Component;
-  edit?: boolean;
-}
-
-interface IEditProps {
-  title: string;
-  options: Options;
-  values: boolean[];
-  addOption: () => void;
-  removeOption: React.MouseEventHandler<HTMLButtonElement>;
-  changeOptionText: React.ChangeEventHandler<HTMLInputElement>;
+interface DefaultFunctions {
+  changeOptionText: (e: React.ChangeEvent, id: string) => void;
   changeTitle: React.ChangeEventHandler<HTMLInputElement>;
-  changeRadio: (idx: number) => void;
-  save: () => void;
+  removeOption: (e: React.MouseEvent<HTMLButtonElement>, id: string) => void;
 }
 
-interface IComponentProps {
-  id: string;
-  data: Component;
+interface ISetComponentHOC extends DefaultFunctions {
   category: string;
-  edit?: boolean;
-  editOptions?: boolean;
+  data: ComponentData;
+  id: string;
+}
+
+interface IComponent extends DefaultFunctions {
+  data: ISetComponentHOC.data;
+  id: ISetComponentHOC.id;
+  edit: boolean;
+  editOptions: boolean;
+  compId?: string;
+}
+
+interface IComponentTitle {
+  data: ComponentData;
+  edit: boolean;
+  changeTitle: IComponent["changeTitle"];
+}
+
+interface IComponentOption {
+  id: string;
+  option: any;
+  idx: number;
+  edit: boolean;
+  uniqueId?: string;
+  compId?: string;
+  changeOptionText: IComponent["changeOptionText"];
+  removeOption: IComponent["removeOption"];
 }

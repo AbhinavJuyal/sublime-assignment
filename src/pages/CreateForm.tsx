@@ -1,3 +1,9 @@
+import { FloppyDiskBack, PlusCircle } from "phosphor-react";
+import { useEffect, useState } from "react";
+import { nanoid } from "nanoid";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import toast from "react-hot-toast";
 import CheckBox from "@/components/CheckBox";
 import Radio from "@/components/Radio";
 import Text from "@/components/Text";
@@ -5,17 +11,22 @@ import {
   allComponentsSelector,
   openModal,
   modalSelector,
-} from "@/redux/createFormSlice";
+  resetForm,
+  loadForm,
+  formSelector,
+} from "@/redux/formSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { CHECKBOX, RADIO, TEXT } from "@/utils/constants";
+import { CHECKBOX, RADIO, storageKey, TEXT } from "@/utils/constants";
 import Modal from "@components/Modal";
-import { PlusCircle } from "phosphor-react";
-import { useEffect, useState } from "react";
+import ComponentHOC from "@/hoc/ComponentHOC";
 
 const fetchData = () => {
-  const data = JSON.parse(window.localStorage.getItem("create") as string);
+  const data = JSON.parse(window.localStorage.getItem(storageKey) as string);
   return data;
 };
+
+const FORM_TITLE = "form-title";
+const FORM_DESC = "form-description";
 
 const ShowTypes: Record<string, (props: any) => JSX.Element> = {
   [CHECKBOX]: CheckBox,
@@ -24,28 +35,62 @@ const ShowTypes: Record<string, (props: any) => JSX.Element> = {
 };
 
 const CreateForm = () => {
-  const componentData = useAppSelector(allComponentsSelector);
-  const { open } = useAppSelector(modalSelector);
   const dispatch = useAppDispatch();
-  const [formTitle, setFormTitle] = useState<string>("");
-  const [formDesc, setFormDesc] = useState<string>("");
+  const { open } = useAppSelector(modalSelector);
+  const componentData = useAppSelector(allComponentsSelector);
+  const { title, desc, id: formId } = useAppSelector(formSelector);
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const [formTitle, setFormTitle] = useState<string>(title);
+  const [formDesc, setFormDesc] = useState<string>(desc);
+
+  useEffect(() => {
+    const id = state?.id;
+    if (id) {
+      const forms = fetchData();
+      dispatch(loadForm({ data: forms[id], id }));
+    }
+    return () => {
+      dispatch(resetForm());
+    };
+  }, []);
 
   const handleOpen = () => {
     dispatch(openModal(true));
   };
 
   const changeFormText: React.ChangeEventHandler = (e) => {
-    const el = e.target as HTMLInputElement;
-    const type = el.dataset.type;
-    if (type === "title") setFormTitle(el.value);
-    if (type === "description") setFormDesc(el.value);
+    const { name, value } = e.target as HTMLInputElement;
+    if (name === FORM_TITLE) setFormTitle(value);
+    if (name === FORM_DESC) setFormDesc(value);
+  };
+
+  const handleCreateForm = () => {
+    if (formTitle === "" || formDesc === "") {
+      console.log("no save data");
+      return;
+    }
+    const allForms = fetchData();
+    window.localStorage.setItem(
+      "form",
+      JSON.stringify({
+        ...allForms,
+        [formId === "" ? nanoid() : formId]: {
+          formTitle,
+          formDesc,
+          componentData,
+        },
+      })
+    );
+    toast.success("Form Created!");
+    navigate("/");
   };
 
   return (
     <>
       {open && <Modal />}
       <div className="w-full h-full flex justify-center">
-        <div className="relative py-10">
+        <div className="relative">
           <div className="create-form-padding">
             <div className="form-title">
               <input
@@ -55,7 +100,7 @@ const CreateForm = () => {
                 onChange={changeFormText}
                 placeholder="Add Title"
                 className="default-input text-3xl font-semibold placeholder:text-3xl placeholder:font-semibold mb-8"
-                data-type="title"
+                name={FORM_TITLE}
               />
             </div>
             <div className="form-description">
@@ -65,27 +110,38 @@ const CreateForm = () => {
                 onChange={changeFormText}
                 placeholder="Add Description"
                 className="default-input h-14 w-full placeholder:text-xl placeholder:font-medium"
-                data-type="description"
+                name={FORM_DESC}
               />
             </div>
           </div>
           <div>
             {Object.keys(componentData).length !== 0 &&
               Object.entries(componentData).map(
-                ([key, comp]: [string, Component], index) => {
-                  const Show = ShowTypes[comp.category];
-                  return <Show key={key} id={key} data={comp} />;
+                ([key, comp]: [string, ComponentData], index) => {
+                  return (
+                    <div className="mb-6" key={key}>
+                      <ComponentHOC
+                        category={comp.category}
+                        id={key}
+                        data={comp}
+                        editOptions={true}
+                      />
+                    </div>
+                  );
                 }
               )}
           </div>
           {/* add button mobile */}
-          <div className="w-full fixed flex justify-center items-center bottom-0 left-0 right-0 mb-4">
-            <button
-              type="button"
-              onClick={handleOpen}
-              className="inline bg-white rounded-full p-2 shadow-[0_2px_20px_0_rgba(0,0,0,0.15)]"
-            >
-              <PlusCircle size={42} className="text-primary" weight="fill" />
+          <div className="w-full max-w-[700px] fixed flex justify-center items-center gap-4 bottom-0 left-0 right-0 mb-4 rounded-full p-2 shadow-[0_2px_20px_0_rgba(0,0,0,0.15)] mx-auto">
+            <button type="button" onClick={handleOpen} className="inline">
+              <PlusCircle size={32} className="text-primary" weight="fill" />
+            </button>
+            <button type="button" onClick={handleCreateForm} className="inline">
+              <FloppyDiskBack
+                size={32}
+                className="text-primary"
+                weight="fill"
+              />
             </button>
           </div>
         </div>
